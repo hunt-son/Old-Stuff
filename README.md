@@ -1,2 +1,2 @@
-# Project1
-This is my first matlab project
+# MatLab
+Here's some basic stuff I've done in MatLab
