@@ -1,0 +1,105 @@
+from visual import *
+from visual.graph import *
+
+L = H = W = 1
+scene = display(background=color.white)  #sets background color
+shapeQ1 = box(pos=(0,-3,0), length=L, height=H, width=W, color=color.blue)  #graphs the cube
+shapeQ2 = sphere(pos=vector(0, 3, 0.), radius=1, color=color.yellow, opacity = 0.5)
+
+"constants"
+k = 9e9
+q1 = -10e-9
+q2 = 10e-9
+vscale = 0.05
+dx = dy = dz = 1              # density of points where the field is calcualted
+x_lim  = y_lim = z_lim = 5   # limts for where to plot the field
+rmin = 2
+
+"eqautions"
+dist = shapeQ1.pos - shapeQ2.pos
+x = -x_lim
+while x <= x_lim:
+    y = -y_lim
+    while y <= y_lim:
+        z = -z_lim
+        while z <= z_lim:
+            ######## CALCULAITON OF FIELDS HAPPENS HERE
+            r_field = vector(x,y,z)  # position we are evaluating the field
+            sv1 = r_field  - shapeQ1.pos # seperation vector from the field position to the charge (vetor addition used here)
+            sv2 = r_field  - shapeQ2.pos 
+            E1 = vector(k * q1 * sv1 / pow(mag(sv1),3.))  #electric field vector
+            E2 = vector(k * q2 * sv2 / pow(mag(sv2),3.))
+            ######## PLOT OF FIELD VECTORS MADE HERE
+            if abs(sv1) > rmin and abs(sv2) > rmin:  ## only plot the dipole field far from the charges
+                arrow(pos=r_field, axis=vscale * (E1 + E2), color=color.black, opacity = 0.5) # vector field formed here
+            z = z + dz
+        y = y + dy
+    x = x + dx
+
+"end of graphic code"
+
+
+############################################
+### PART 2: plot the field strength vs radius on a log plot, verify the 1/r^n dependance by doing a by hand fit
+############################################
+
+#### SET UP THE PLOT, *** ALWAYS GIVE A PLOT TITLES! ***
+graph1 = gdisplay(title = 'field magnitude, x-cut',xtitle='x [arb units]',ytitle = 'magnitude E field [arb units]',logy = True)
+## note the logy keyword.  Set it to False to see why this is useful
+
+"plot of each of the individual vector arrows"
+## now make a plot of the field magnitude along the x-direction
+Plot_Emag_xcut = gdots(color=color.red) ## initialize the plot of the magnitude of the E field along the x-axis
+x_lim = x_lim * 1 ## use 100x the range of the field plot
+dx = dx/100. ## use 100x the resolution as the field plot
+## initilize the initial x position and fix the y and z positions both to zero
+x = -x_lim
+y=0.
+z=0.
+## loop through x and plot the magnitude of the field at each point
+while x <= x_lim:
+    ## Here we calcualte the field, same as above
+    r_field = vector(x,y,z)  # position we are evaluating the field
+    sv1 = r_field  - shapeQ1.pos # seperation vector from the field position to the charge (vetor addition used here)
+    sv2 = r_field  - shapeQ2.pos 
+    E1 = vector(k * q1 * sv1 / pow(mag(sv1),3.))  #electric field vector
+    E2 = vector(k * q2 * sv2 / pow(mag(sv2),3.))
+    ## plot the field, but only if it is far enoguh from the charge to minimize the spikiness of the plot
+    if abs(x) > rmin:
+        Plot_Emag_xcut.plot(pos=(x,mag(E1+E2)))  #equation that gives x as arb units and y as the vector addition of the dipole
+    x = x + dx
+    """if mag(E1 + E2) > 1e12:         ##I used this code to check for outliers
+        print x
+        print mag(E1 + E2) """
+    
+"end of plotting red dots on field plot"
+
+## now make a plot of the field magnitude along the x-direction
+    ## this model assumes the following funcitonal form:
+    ##
+    ##                  model = [model_amplitude]* x^[model_index]
+    ##
+    ## adjust these two paramaters to make the fit work out well
+## model paramaters
+model_amplitude = 1.    
+model_index = -2.
+
+## make a plot of the model    
+Plot_model = gcurve(color = color.green) # initilize the model plot
+## initilize the model position to the same start coordinate as above
+x = -x_lim
+y=0.
+z=0.
+## loop through x and plot the model
+while x <= x_lim:
+    if abs(x) > rmin:
+        ## model is just a functional form with paramters adjusted by hand
+        Plot_model.plot(pos = (x+1,  model_amplitude* (abs(x+1.))**(model_index)))
+    x = x + dx
+############################################
+############################################
+
+"end of code"
+
+
+
