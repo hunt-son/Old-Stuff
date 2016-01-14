@@ -1,0 +1,145 @@
+from visual import *
+from visual.graph import *
+
+#I have 9 rows and 12 columns to account for 4 fixed conducting line charges
+rows = 9
+columns = 12
+v = zeros((rows,columns), float) # fill 'V' with zeros
+scene = display(background=color.white)
+#create my line charges for graphs
+conductor1 = box(pos=(0,0,0), length=0.1, height=7, width=0.1, color=color.blue)  #length * width keeps problem 2 dimensional
+conductor2 = box(pos=(10,0,0), length=0.1, height=7, width=0.1, color=color.blue)
+
+# Enter the boundary conditions for 'v' other than 0
+for i in arange(0,rows,1): # j from 0 to columns - 1
+    v[1:i-1,columns-1] = -10.0
+    v[1:i-1,0] = 10.0
+#print v # print the starting values
+dn = 1
+n = 1
+while n < 700: # repeat 700 times
+    # Loop over all of the interior points
+    for i in arange(1,rows-1,1): # i from 1 to rows-1
+        for j in arange(1,columns-1,1): # j from 1 to columns-1
+            vNew = (v[i-1,j]+v[i+1,j]+v[i,j-1]+v[i,j+1]) / 4.0   #take the average values of the four cardinal points around a point
+            #over-relaxation to speed up steps
+            alpha = 1.35
+            deltaV =(vNew-v[i,j])
+            vNew2 = (alpha * deltaV) + vNew
+            v[i,j] = vNew  #reset vNew for another loop
+            print v
+    n += dn #increment by dn
+#print v
+
+
+#Graph the Electric Field in 3D-space
+for i in arange(1,rows-1,1):
+    for j in arange(1,columns - 1,1):
+        vNewVct = vector(j,i,0)  #switch j to be rows and i to be columns or y,x
+        E = -vector((v[i,j+1]-v[i,j-1])/2,(v[i+1,j]-v[i-1,j])/2)
+        arrow(pos=vNewVct - vector(0.5,4,0), axis=E*0.4, color=color.black, opacity = 0.5) #vector field formed here
+
+########################################## GRAPH POTENTIALS ALONG EACH BOUNDARY AND THROUGH THE MIDDLES########################################################
+        
+graph_a = gdisplay(foreground=color.black, background=color.white, title='left side potential', xtitle='position(cm)', ytitle='Volts (V)')
+leftS1 = gcurve(color=color.black, gdisplay=graph_a)
+
+graph_b = gdisplay(foreground=color.black, background=color.white, title='right side potential', xtitle='position(cm)', ytitle='Volts (V)')
+rightS1 = gcurve(color=color.black, gdisplay=graph_b)
+
+graph_c = gdisplay(foreground=color.black, background=color.white, title='Vertical Middle potential', xtitle='position(cm)', ytitle='Volts (V)')
+vMiddleS1 = gcurve(color=color.black, gdisplay=graph_c)
+
+graph_d = gdisplay(foreground=color.black, background=color.white, title='top side potential', xtitle='position(cm)', ytitle='Volts (V)')
+topS1 = gcurve(color=color.black, gdisplay=graph_d)
+
+graph_e = gdisplay(foreground=color.black, background=color.white, title='bottom side potential', xtitle='position(cm)', ytitle='Volts (V)')
+bottomS1 = gcurve(color=color.black, gdisplay=graph_e)
+
+graph_f = gdisplay(foreground=color.black, background=color.white, title='Horizontal Middle potential', xtitle='position(cm)', ytitle='Volts (V)')
+hMiddleS1 = gcurve(color=color.black, gdisplay=graph_f)
+
+for i in arange(1,rows-0.5,1):
+    leftS1.plot(pos=(i,v[i,1]))
+
+for i in arange(1,rows-0.5,1):
+    rightS1.plot(pos=(i,v[i,10]))
+
+for i in arange(0,rows-0.5,1):
+    vMiddleS1.plot(pos=(i,v[i,5]))
+
+for j in arange(0,rows-0.5,1):
+    topS1.plot(pos=(v[1,j],j))
+
+for j in arange(0,rows-0.5,1):
+    bottomS1.plot(pos=(v[7,j],j))
+
+for j in arange(0,rows-0.5,1):
+    hMiddleS1.plot(pos=(v[4,j],j))
+
+###############################################################################################################################################################
+
+
+################################################ CALCULATE AND GRAPH EACH INDIVIDUAL CHARGE PER LENGTH ALONG THE BOUNDARIES####################################
+
+
+Q1 = Q2 = Q3 = Q4 = 0
+eps_0 = (8.85*(10**-12))
+A = 0.1
+
+##Calculate using Gauss' Law each individual charge per length on the conductors
+graph1 = gdisplay(foreground=color.black, background=color.white, title='left side sigma', xtitle='position(cm)', ytitle='surface charge density(C/m^2)')
+leftS = gcurve(gdisplay=graph1, color=color.red)
+for i in arange(1,rows-1,1):
+    for j in arange(1,2,1): 
+        vNewVct = vector(j,i,0)
+        E = -vector((v[i,j+1]-v[i,j-1])/2,(v[i+1,j]-v[i-1,j])/2)
+        sigma = E.x * eps_0
+        dQ = sigma * A
+        Q1 += abs(dQ) #increment by dQ
+        leftS.plot(pos=(i,Q1))
+
+
+graph2 = gdisplay(foreground=color.black, background=color.white, title='top side sigma', xtitle='position(cm)', ytitle='surface charge density(C/m^2)')
+topS = gcurve(gdisplay=graph2, color=color.red)
+for i in arange(1,2,1):        
+    for j in arange(1,columns-1,1):
+        vNewVct = vector(j,i,0)
+        #print vNewVct
+        E = -vector((v[i,j+1]-v[i,j-1])/2,(v[i+1,j]-v[i-1,j])/2)
+        sigma = E.y * eps_0
+        dQ = sigma * A
+        Q2 += abs(dQ)
+        topS.plot(pos=(j,Q2))
+
+
+graph3 = gdisplay(foreground=color.black, background=color.white, title='right side sigma', xtitle='position(cm)', ytitle='surface charge density(C/m^2)')
+rightS = gcurve(gdisplay=graph3, color=color.red)
+
+for i in arange(1,rows-1,1):
+    for j in arange(columns-2,columns-1,1): 
+        vNewVct = vector(j,i,0)
+        #print vNewVct
+        E = -vector((v[i,j+1]-v[i,j-1])/2,(v[i+1,j]-v[i-1,j])/2)     
+        sigma = E.x * eps_0
+        dQ = -sigma * A
+        Q3 += abs(dQ)
+        rightS.plot(pos=(i,Q3))
+
+graph4 = gdisplay(foreground=color.black, background=color.white, title='bottom side sigma', xtitle='position(cm)', ytitle='surface charge density(C/m^2)')
+bottomS = gcurve(gdisplay=graph4, color=color.red)
+for i in arange(7,8,1):        
+    for j in arange(1,columns-1,1):
+        vNewVct = vector(j,i,0)
+        #print vNewVct
+        E = -vector((v[i,j+1]-v[i,j-1])/2,(v[i+1,j]-v[i-1,j])/2)
+        sigma = E.y * eps_0
+        dQ = sigma * A
+        Q4 += abs(dQ)
+        bottomS.plot(pos=(j,Q4))
+
+Q_L_tot = Q1 + (Q2 / 2) + Q3 + (Q4 / 2)  #Q2 and Q4 are divided by 2 because of symmetry laws
+print Q_L_tot
+C_L = sum(Q_L_tot / (v[1:7,1] - v[1:7,10]))  ###C/L = Q/ (Va - Vb)
+v[1:7,1] - v[1:7,10]
+print C_L

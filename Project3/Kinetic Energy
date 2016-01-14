@@ -1,0 +1,44 @@
+from visual import *
+from visual.graph import *
+#################### CONSTANTS ########################
+#starting position
+r = vector(0,0,0.)
+#Graph the electron
+shapeQ2 = sphere(pos=r, radius=1e-15, color=color.yellow, opacity = 0.5, make_trail = True)
+#Make the Plot
+ePlot = gdisplay(title = 'Kinetic Energy vs. Time',xtitle='time [seconds]',ytitle = 'Kinetic Energy (Joules)')
+Plot_kE = gcurve(color=color.red, gdisplay = ePlot)
+
+#starting velocity
+v0 = vector(2e6,0,0.)
+#Electric Field Strength
+E = vector(0,400,0.) ##(allows me to control strength of E_Field)
+#Magnetic Field Strength
+B = vector(0,0,5e-2) ##(allows me to control strength of Mag_Field)
+#Charge Strength
+q = -16.02e-20
+#Charge Mass
+m = 91.09e-32
+
+################### MOTION ############################
+# Constant Steps
+#time
+t = 0
+#time step
+dt = 1e-12 ##(allows me to control how big I want my steps to be in loop)
+#set vF for first loop
+vF = v0
+
+while t < 1.1e-7: ##(allows me to control how many times I want the loop to calculate)
+    rate(1e100) #rate to trace the trail
+    # acceleration
+    a = (q/m)*(E + vF.cross(B))
+    # update vF
+    vF += a*dt #vF = v(previous) + a*dt
+    #update position
+    shapeQ2.pos = shapeQ2.pos + vF*dt
+    ### PLOT KE ###
+    kE = 0.5*m*mag2(vF) #(1/2)mv^2
+    Plot_kE.plot(pos=(t,kE)) #time vs. Kinetic Energy
+    #update time, as part of counting loop
+    t += dt

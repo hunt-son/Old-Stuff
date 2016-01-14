@@ -1,0 +1,154 @@
+from visual import *
+from visual.graph import *
+
+r = 0
+Side = 2e-2
+cubeVolume = Side ** 3
+sphereVolume = 4/3 * pi * (Side/2) ** 3
+volumeRatio = cubeVolume / sphereVolume
+totalChargesphere = 1e-10/sphereVolume
+totalChargecube = 1e-10/volumeRatio
+k = 9e9
+
+dx = dy = dz = 1e-2
+dV = dx * dy * dz             # density of points where the field is calcualted
+x_lim  = y_lim = z_lim = .1
+
+
+q = totalChargecube
+rho = q / cubeVolume
+#rho = (.75/pi)*10**-7
+# limts for where to plot the field
+
+graphCube = gdisplay(title = 'field magnitude of cube, x-cut',xtitle='x [meters]',ytitle = 'magnitude E field x-direction [arb units]',logy = False)
+Plot_Emag_xcut = gdots(color=color.red) ## initialize the plot of the magnitude of the E field along the x-axis
+
+
+
+dr = 0.02
+while  r <= 1.0:    
+    x = -x_lim
+    print(r)
+    E = vector(0,0,0.)
+    while x <= x_lim:
+        print("x:",x)
+        y = -y_lim
+        while y <= y_lim:
+            z = -z_lim
+            while z <= z_lim:
+                r_charge = vector(x,y,z)
+                r_field = vector(r,0,0)
+                ######## CALCULAITON OF "Integral of dV HAPPENS HERE
+                sv =(r_field - r_charge)
+                if mag(sv) >= 2. * dx:
+                    dE = k * rho * dV * norm(sv) / pow(mag(sv),2.)  #electric field derivative vector
+                    E = E + dE  
+                z = z + dz
+            y = y + dy
+        x = x + dx
+        #y = z = 0
+    Plot_Emag_xcut.plot(pos=(r,E.x))
+    print(E.x)
+    r += dr
+
+"""
+#Sphere
+q = totalChargesphere
+rho = q / sphereVolume
+r_charge = vector(-x_lim,-y_lim,-z_lim)  # position we are evaluating the field
+while  r <= .2:        
+    x = -x_lim
+    while x <= x_lim:
+        y = -y_lim
+        while y <= y_lim:
+            z = -z_lim
+            while z <= z_lim:
+                ######## CALCULAITON OF "Integral of dV HAPPENS HERE
+                if  mag(vector(x,y,z)) < (r * 1e-2):
+                    r_field = vector(x,y,z)  # position we are evaluating the field            
+                    dEtotal = k * rho * dV * r_field / pow(mag(r_field),3.)  #electric field derivative vector
+                    Etotal = Etotal + dEtotal
+                z = z + dz
+            y = y + dy
+        x = x + dx
+       r += dr
+
+"end of code"
+"""
+
+
+"""
+## now make a plot of the field magnitude along the x-direction
+    ## this model assumes the following funcitonal form:
+    ##
+    ##                  model = [model_amplitude]* x^[model_index]
+    ##
+    ## adjust these two paramaters to make the fit work out well
+## model paramaters
+model_amplitude = 1.    
+model_index = 1.
+
+## make a plot of the model    
+Plot_model = gcurve(color = color.green) # initilize the model plot
+## initilize the model position to the same start coordinate as above
+i = -x_lim
+y=0.
+z=0.
+## loop through x and plot the model
+while i <= 0:
+    if abs(x) > 2e-1:
+        ## model is just a functional form with paramters adjusted by hand
+        Plot_model.plot(pos = (x+1,  model_amplitude* (abs(x+1.))**(model_index)))
+    x = x + dx
+while 0 <= i >= 0.1
+    if abs(x) > 2e-1:
+        ## model is just a functional form with paramters adjusted by hand
+        Plot_model.plot(pos = (x+1,  model_amplitude* (abs(x+1.))**(model_index - 3)))
+    
+############################################
+############################################
+"""    
+
+"end of code"
+
+
+"""
+#Something I made for fun if my project worked. I could have defined the sphere
+#and cube as objects, and then called them here
+
+#E-Field Program
+
+#this variable tells the loop whether it should loop or not.
+# 1 means loop. anything else means don't loop.
+
+loop = 1
+
+#this variable holds the user's choice in the menu:
+
+choice = 0
+
+while loop == 1:
+    #print what options you have
+    print "Welcome to E-Field.py"
+
+    print "your options are:"
+    print " "
+    print "for a Cube, type the number 1"
+    print "for a Sphere, type the number 2"
+    print " "
+    
+    choice = input("Choose your option: ")
+    if choice == 1:
+        print Cube
+        #print graphCube
+    elif choice == 2:
+        print Sphere
+        #print graphSphere
+print "Thank you for using E-Field.py!"
+
+"""
+
+"""i = 0
+    while i <= 2*x_lim:
+        Plot_Emag_xcut.plot(pos=(i,E.x))
+        i = i + 0.01"""

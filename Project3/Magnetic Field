@@ -1,0 +1,163 @@
+#Notes
+# Circular loop of wire with current I.
+# B(R) = (mu / 4pi) * int ( I dl cross R) / mag(r)^3
+
+#plot the mag field on the z-axis
+
+#################CONSTANTS#############################
+from visual import *
+from visual.graph import *
+# origin
+orig = vector(0,0,0.)
+
+# radius
+radius = 0.5 
+
+# current
+I = 10 #amps
+
+#theta start
+theta = 0
+dtheta = 1e-2
+
+# z start
+z = -1
+z_lim = 1
+dz = 1e-2
+
+# x start
+#case 1
+case1x = -1
+case1x_lim = -0.55
+dx = 1e-3
+
+#case 2
+case2x = -0.4
+case2x_lim = 0.4
+
+#case 3
+case3x = 0.55
+case3x_lim = 1
+
+
+# B initialize
+B = vector(0,0,0)
+
+# mu_not / 4pi
+k = 1e-7
+
+#################### SETUP THE GRAPH ###################################
+graph1 = gdisplay(title = "Magnetic Field vs. z-position", xtitle = "z-coordinate (m)", ytitle = "Magnetic Field(T)")
+plotBField  = gcurve(color=color.red, gdisplay = graph1)
+
+############## EQUATIONS #####################
+while z < z_lim - 10:
+    #Use this B for experimental
+    B = vector(0,0,0)
+    #Use this B for analytical
+    B = 0
+
+    #B calculation for analytical
+    B = B + (4 * pi * 1e-7 * I * (pow(radius,2))) / (2* pow(pow((z),2) + pow((radius),2),1.5))
+
+    #Calculates each position along desired z
+    rField = vector(0,0,z)                                                  
+    theta = 0   # reset theta
+    
+    while theta < 2*pi:
+        #predone integral vector around the current loop from r_charge
+        dl = vector(radius * cos(theta),radius * sin(theta),0) * dtheta
+
+        #vector around the current loop
+        rCharge = vector(-radius*sin(theta),radius*cos(theta),0)
+
+        #Seperation Vector
+        sv = rField - rCharge
+
+        #Experimental Result (B acts as dB)
+        B = B +(k * I * dl.cross(sv) / pow(mag(sv),3))
+
+        #increment theta
+        theta += dtheta
+        
+    #plot after each B calculation
+    plotBField.plot(pos=(z,mag(B)))
+    z += dz
+    
+### notes on Brad's Changes (he helped me out to plot the code):
+    ## dl = theta * dtheta by chain rule
+    ##reset B and reset theta
+
+graph1 = gdisplay(title = "Magnetic Field vs. x-position", xtitle = "x-coordinate (m)", ytitle = "Magnetic Field(T)")
+plotBField  = gcurve(color=color.red, gdisplay = graph1)
+###  MAG ALONG X ###
+while case3x < case3x_lim - 10:
+    B = vector(0,0,0)
+    rField = vector(case3x,0,0)
+    theta = 0
+    while theta < 2*pi:
+        #predone integral vector around the current loop from r_charge
+        dl = vector(radius * cos(theta),radius * sin(theta),0) * dtheta
+        
+        #vector around the current loop
+        rCharge = vector(-radius*sin(theta),radius*cos(theta),0)
+
+        #seperation vector
+        sv = rField - rCharge
+
+        #update B
+        B = B +(k * I * dl.cross(sv) / pow(mag(sv),3))
+
+        #increment theta
+        theta += dtheta
+
+    #Plot after each B calculation
+    plotBField.plot(pos=(case3x,mag(B)))
+
+    #increment x
+    case3x += dx
+
+### Helmholtz Coils - z ###
+#Case
+z = -1
+z_lim = 1
+
+
+### THE CODE HERE WORKS THE SAME AS THE CODE ABOVE, EXCEPT THAT I HAVE TWO COILS TO CONTRIBUTE TO THE B-FIELD INSTEAD OF 1 ###
+graph1 = gdisplay(title = "Magnetic Field (Helmholtz) vs. x-position", xtitle = "x-coordinate (m)", ytitle = "Magnetic Field(T)")
+plotBField  = gcurve(color=color.red, gdisplay = graph1)
+while z < z_lim - 10:
+    B1 = B2 = vector(0,0,0)
+    rField = vector(0,0,z)
+    theta = 0
+    while theta < 2*pi:
+        dl = vector(radius * cos(theta),radius * sin(theta),0) *dtheta
+        dI = I*dl
+        rChargeLow = vector(-radius*sin(theta),radius*cos(theta),-radius/2)
+        rChargeHigh = vector(-radius*sin(theta),radius*cos(theta),radius/2)
+        sv1 = rField - rChargeLow
+        sv2 = rField - rChargeHigh
+        B1 = B1 +(k * dI.cross(sv1) / pow(mag(sv1),3))
+        B2 = B2 +(k * dI.cross(sv2) / pow(mag(sv2),3))
+        B = B1 + B2
+        theta += dtheta
+    plotBField.plot(pos=(z,mag(B)))
+    z += dz
+
+while case3x < case3x_lim:
+    B1 = B2 = vector(0,0,0)
+    rField = vector(case3x,0,0)
+    theta = 0
+    while theta < 2*pi:
+        dl = vector(radius * cos(theta),radius * sin(theta),0) *dtheta
+        dI = I*dl
+        rChargeLow = vector(-radius*sin(theta),radius*cos(theta),-radius/2)
+        rChargeHigh = vector(-radius*sin(theta),radius*cos(theta),radius/2)
+        sv1 = rField - rChargeLow
+        sv2 = rField - rChargeHigh
+        B1 = B1 +(k * dI.cross(sv1) / pow(mag(sv1),3))
+        B2 = B2 +(k * dI.cross(sv2) / pow(mag(sv2),3))
+        B = B1 + B2
+        theta += dtheta
+    plotBField.plot(pos=(case3x,mag(B)))
+    case3x += dx
