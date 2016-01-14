@@ -1,0 +1,18 @@
+function [ LSS ] = leastSquares( a, c )
+%Sample code for a least squares solution
+%   type into the for loop the matrice's you'd like to act on
+n = 1;
+for b = 0:0.5:3
+    a1 = sin(b);
+    a2 = cos(b);
+    a3 = sin(2*b);
+    a4 = cos(2*b);
+    a(n,:) = [1 a1 a2 a3 a4];
+    c(n,1) = b;
+    n = n+1;
+end
+LSS = (a' * a)^-1 * (a' * c);
+
+end
+
+
